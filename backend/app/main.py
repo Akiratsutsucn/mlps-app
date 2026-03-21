@@ -30,6 +30,12 @@ app.include_router(issues.router)
 app.include_router(statistics.router)
 app.include_router(export.router)
 
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
+
+
 # Serve uploaded files
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -39,8 +45,3 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 FRONTEND_DIST = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
 if os.path.exists(FRONTEND_DIST):
     app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
-
-
-@app.get("/api/health")
-def health():
-    return {"status": "ok"}
