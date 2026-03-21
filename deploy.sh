@@ -2,7 +2,7 @@
 # 等级保护评测过程记录系统 - 服务器部署脚本
 set -e
 
-APP_DIR="/opt/mlps-app"
+APP_DIR="/var/www/mlps-app"
 REPO="git@github.com:Akiratsutsucn/mlps-app.git"
 
 echo "=== 部署等级保护评测过程记录系统 ==="

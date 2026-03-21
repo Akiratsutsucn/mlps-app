@@ -25,8 +25,8 @@
 
 ```bash
 # 克隆代码
-git clone git@github.com:Akiratsutsucn/mlps-app.git
-cd mlps-app
+git clone git@github.com:Akiratsutsucn/mlps-app.git /var/www/mlps-app
+cd /var/www/mlps-app
 
 # 后端
 cd backend
@@ -48,7 +48,7 @@ npm run build
 server {
     listen 8900;
     location / {
-        root /path/to/mlps-app/frontend/dist;
+        root /var/www/mlps-app/frontend/dist;
         try_files $uri $uri/ /index.html;
     }
     location /api/ {
