@@ -8,9 +8,31 @@ from app.routers import projects, eval_objects, check_items, check_records, issu
 
 Base.metadata.create_all(bind=engine)
 
+from sqlalchemy import inspect, text
+
+
+# 数据库迁移：添加 extension_type 和 standard_ref 列
+def migrate_check_items_table():
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        columns = [col["name"] for col in inspector.get_columns("check_items")]
+        if "extension_type" not in columns:
+            conn.execute(text("ALTER TABLE check_items ADD COLUMN extension_type VARCHAR(50)"))
+            conn.execute(text("ALTER TABLE check_items ADD COLUMN standard_ref VARCHAR(100)"))
+            conn.execute(text(
+                "UPDATE check_items SET extension_type = '云计算', standard_ref = 'GB/T 22239-2019' "
+                "WHERE is_cloud_extension = 1"
+            ))
+            conn.commit()
+            print("迁移完成：check_items 表已添加 extension_type 和 standard_ref 列")
+
+
+migrate_check_items_table()
+
 # Seed question bank on first run
-from app.seed.seed_loader import seed_check_items
+from app.seed.seed_loader import seed_check_items, seed_extension_items
 seed_check_items()
+seed_extension_items()
 
 app = FastAPI(title="等级保护评测过程记录系统", version="1.0.0")
 

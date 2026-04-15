@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.database import get_db
-from app.models.models import EvalObject, CheckRecord, Issue
+from app.models.models import EvalObject, CheckRecord, Issue, CheckItem
 
 router = APIRouter(prefix="/api/projects/{project_id}/stats", tags=["statistics"])
 
@@ -51,6 +51,13 @@ def get_project_stats(project_id: int, db: Session = Depends(get_db)):
             "compliant": obj_compliant,
         })
 
+    # 题库扩展类型分布
+    extension_stats = {}
+    ext_types = db.query(CheckItem.extension_type, func.count(CheckItem.id)).group_by(CheckItem.extension_type).all()
+    for ext_type, count in ext_types:
+        label = ext_type if ext_type else "基础通用"
+        extension_stats[label] = count
+
     return {
         "total_records": total_records,
         "result_counts": result_counts,
@@ -58,4 +65,5 @@ def get_project_stats(project_id: int, db: Session = Depends(get_db)):
         "issue_counts": issue_counts,
         "eval_objects": obj_type_stats,
         "eval_object_count": len(objects),
+        "extension_stats": extension_stats,
     }

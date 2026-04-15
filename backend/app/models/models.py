@@ -37,6 +37,23 @@ class EvalObjectType(str, enum.Enum):
     SECURITY_DOCUMENT = "安全管理文档"
     VULN_SCAN = "漏洞扫描"
     PENTEST = "渗透测试"
+    # --- 新增 16 种（扩展领域） ---
+    SENSOR_NODE = "感知节点设备"
+    GATEWAY_NODE = "网关节点设备"
+    ICS_DEVICE = "工业控制设备"
+    OUTDOOR_CTRL = "室外控制设备"
+    WIRELESS_AP = "无线接入设备"
+    MOBILE_TERMINAL = "移动终端"
+    MEC_NODE = "MEC节点"
+    EDGE_GATEWAY = "边缘网关"
+    BIGDATA_PLATFORM = "大数据平台"
+    DATA_COLLECTOR = "数据采集节点"
+    IPV6_NETWORK = "IPv6网络设备"
+    IPV6_SECURITY = "IPv6安全设备"
+    BLOCKCHAIN_NODE = "区块链节点"
+    SMART_CONTRACT = "智能合约系统"
+    BASE_STATION_5G = "5G基站"
+    UPF_DEVICE = "UPF设备"
 
 
 class Project(Base):
@@ -81,6 +98,8 @@ class CheckItem(Base):
     item_code = Column(String(50))
     content = Column(Text, nullable=False)
     is_cloud_extension = Column(Boolean, default=False)
+    extension_type = Column(String(50), nullable=True)   # 扩展领域，null=基础通用
+    standard_ref = Column(String(100), nullable=True)     # 标准来源编号
     created_at = Column(DateTime, default=datetime.now)
 
 

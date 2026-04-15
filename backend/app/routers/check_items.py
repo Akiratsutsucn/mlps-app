@@ -14,6 +14,8 @@ def list_check_items(
     security_level: Optional[str] = None,
     category: Optional[str] = None,
     is_cloud: Optional[bool] = None,
+    extension_type: Optional[str] = None,
+    standard_ref: Optional[str] = None,
     keyword: Optional[str] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
@@ -28,6 +30,13 @@ def list_check_items(
         query = query.filter(CheckItem.category == category)
     if is_cloud is not None:
         query = query.filter(CheckItem.is_cloud_extension == is_cloud)
+    if extension_type:
+        if extension_type == "base":
+            query = query.filter(CheckItem.extension_type.is_(None))
+        else:
+            query = query.filter(CheckItem.extension_type == extension_type)
+    if standard_ref:
+        query = query.filter(CheckItem.standard_ref == standard_ref)
     if keyword:
         query = query.filter(CheckItem.content.contains(keyword))
     total = query.count()

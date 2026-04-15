@@ -8,17 +8,72 @@ const total = ref(0)
 const loading = ref(false)
 const showDialog = ref(false)
 const editingId = ref(null)
-const filters = ref({ object_type: '', security_level: '', keyword: '', page: 1, page_size: 20 })
+const filters = ref({
+  object_type: '', security_level: '', keyword: '',
+  extension_type: '', standard_ref: '',
+  page: 1, page_size: 20
+})
 
 const OBJECT_TYPES = [
   '物理机房', '网络设备', '安全设备', '服务器/存储', '终端设备',
   '其他系统或设备', '系统管理软件/平台', '业务应用系统/平台',
-  '数据资源', '安全相关人员', '安全管理文档', '漏洞扫描', '渗透测试'
+  '数据资源', '安全相关人员', '安全管理文档', '漏洞扫描', '渗透测试',
+  '感知节点设备', '网关节点设备', '工业控制设备', '室外控制设备',
+  '无线接入设备', '移动终端', 'MEC节点', '边缘网关',
+  '大数据平台', '数据采集节点', 'IPv6网络设备', 'IPv6安全设备',
+  '区块链节点', '智能合约系统', '5G基站', 'UPF设备'
 ]
+
+const EXTENSION_TYPES = [
+  { label: '全部', value: '' },
+  { label: '基础通用', value: 'base' },
+  { label: '云计算', value: '云计算' },
+  { label: '移动互联', value: '移动互联' },
+  { label: '物联网', value: '物联网' },
+  { label: '工业控制', value: '工业控制' },
+  { label: '边缘计算', value: '边缘计算' },
+  { label: '大数据', value: '大数据' },
+  { label: 'IPv6', value: 'IPv6' },
+  { label: '区块链', value: '区块链' },
+  { label: '5G接入', value: '5G接入' },
+]
+
+const STANDARD_REFS = [
+  { label: '全部', value: '' },
+  { label: 'GB/T 22239-2019', value: 'GB/T 22239-2019' },
+  { label: 'GA/T 1390.6-2025', value: 'GA/T 1390.6-2025' },
+  { label: 'GA/T 1390.7-2025', value: 'GA/T 1390.7-2025' },
+  { label: 'GA/T 1390.8-2025', value: 'GA/T 1390.8-2025' },
+  { label: 'GA/T 1390.9-2025', value: 'GA/T 1390.9-2025' },
+  { label: 'GA/T 2348-2025', value: 'GA/T 2348-2025' },
+]
+
+const EXTENSION_STANDARD_MAP = {
+  '云计算': 'GB/T 22239-2019',
+  '移动互联': 'GB/T 22239-2019',
+  '物联网': 'GB/T 22239-2019',
+  '工业控制': 'GB/T 22239-2019',
+  '边缘计算': 'GA/T 1390.6-2025',
+  '大数据': 'GA/T 1390.7-2025',
+  'IPv6': 'GA/T 1390.8-2025',
+  '区块链': 'GA/T 1390.9-2025',
+  '5G接入': 'GA/T 2348-2025',
+}
+
+const getExtensionTagType = (extType) => {
+  if (!extType) return 'info'
+  const national = ['云计算', '移动互联', '物联网', '工业控制']
+  if (national.includes(extType)) return ''
+  if (extType === '5G接入') return 'warning'
+  return 'warning'
+}
+
+const getExtensionLabel = (extType) => extType || '基础通用'
 
 const form = ref({
   object_type: '', security_level: '三级', category: '', sub_category: '',
-  item_code: '', content: '', is_cloud_extension: false
+  item_code: '', content: '', is_cloud_extension: false,
+  extension_type: '', standard_ref: ''
 })
 
 const loadData = async () => {
@@ -37,7 +92,7 @@ const loadData = async () => {
 
 const openCreate = () => {
   editingId.value = null
-  form.value = { object_type: '', security_level: '三级', category: '', sub_category: '', item_code: '', content: '', is_cloud_extension: false }
+  form.value = { object_type: '', security_level: '三级', category: '', sub_category: '', item_code: '', content: '', is_cloud_extension: false, extension_type: '', standard_ref: '' }
   showDialog.value = true
 }
 
@@ -47,7 +102,9 @@ const openEdit = (item) => {
     object_type: item.object_type, security_level: item.security_level,
     category: item.category, sub_category: item.sub_category || '',
     item_code: item.item_code || '', content: item.content,
-    is_cloud_extension: item.is_cloud_extension
+    is_cloud_extension: item.is_cloud_extension,
+    extension_type: item.extension_type || '',
+    standard_ref: item.standard_ref || ''
   }
   showDialog.value = true
 }
@@ -104,6 +161,16 @@ onMounted(loadData)
             <el-option label="三级" value="三级" />
           </el-select>
         </el-form-item>
+        <el-form-item label="扩展类型">
+          <el-select v-model="filters.extension_type" clearable placeholder="全部" @change="loadData" style="width: 130px;">
+            <el-option v-for="t in EXTENSION_TYPES" :key="t.value" :label="t.label" :value="t.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标准来源">
+          <el-select v-model="filters.standard_ref" clearable placeholder="全部" @change="loadData" style="width: 170px;">
+            <el-option v-for="t in STANDARD_REFS" :key="t.value" :label="t.label" :value="t.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="关键词">
           <el-input v-model="filters.keyword" placeholder="搜索内容" clearable @clear="loadData" @keyup.enter="loadData" style="width: 200px;" />
         </el-form-item>
@@ -121,11 +188,14 @@ onMounted(loadData)
         <el-table-column prop="category" label="分类" width="130" />
         <el-table-column prop="sub_category" label="子分类" width="120" />
         <el-table-column prop="content" label="检查内容" min-width="300" show-overflow-tooltip />
-        <el-table-column label="云扩展" width="70" align="center">
+        <el-table-column label="扩展类型" width="100" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.is_cloud_extension" size="small" type="info">是</el-tag>
+            <el-tag :type="getExtensionTagType(row.extension_type)" size="small">
+              {{ getExtensionLabel(row.extension_type) }}
+            </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="standard_ref" label="标准来源" width="160" />
         <el-table-column label="操作" width="130" align="center">
           <template #default="{ row }">
             <el-button text type="primary" size="small" @click="openEdit(row)">编辑</el-button>
@@ -164,8 +234,16 @@ onMounted(loadData)
         <el-form-item label="检查内容" required>
           <el-input v-model="form.content" type="textarea" :rows="4" placeholder="检查项内容" />
         </el-form-item>
-        <el-form-item label="云计算扩展">
-          <el-switch v-model="form.is_cloud_extension" />
+        <el-form-item label="扩展类型">
+          <el-select v-model="form.extension_type" clearable placeholder="基础通用（不选）" style="width: 100%;"
+            @change="(val) => { form.standard_ref = EXTENSION_STANDARD_MAP[val] || '' }">
+            <el-option v-for="(std, ext) in EXTENSION_STANDARD_MAP" :key="ext" :label="ext" :value="ext" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标准来源">
+          <el-select v-model="form.standard_ref" clearable placeholder="自动填充" style="width: 100%;">
+            <el-option v-for="t in STANDARD_REFS.slice(1)" :key="t.value" :label="t.label" :value="t.value" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>

@@ -65,6 +65,8 @@ class CheckItemCreate(BaseModel):
     item_code: Optional[str] = None
     content: str
     is_cloud_extension: bool = False
+    extension_type: Optional[str] = None
+    standard_ref: Optional[str] = None
 
 class CheckItemUpdate(BaseModel):
     object_type: Optional[str] = None
@@ -74,6 +76,8 @@ class CheckItemUpdate(BaseModel):
     item_code: Optional[str] = None
     content: Optional[str] = None
     is_cloud_extension: Optional[bool] = None
+    extension_type: Optional[str] = None
+    standard_ref: Optional[str] = None
 
 class CheckItemOut(BaseModel):
     id: int
@@ -84,6 +88,8 @@ class CheckItemOut(BaseModel):
     item_code: Optional[str]
     content: str
     is_cloud_extension: bool
+    extension_type: Optional[str] = None
+    standard_ref: Optional[str] = None
     created_at: datetime
     model_config = {"from_attributes": True}
 

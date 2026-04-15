@@ -63,6 +63,32 @@ const progressBarOption = computed(() => {
   }
 })
 
+const EXTENSION_COLORS = {
+  '基础通用': '#909399',
+  '云计算': '#409EFF',
+  '移动互联': '#409EFF',
+  '物联网': '#409EFF',
+  '工业控制': '#409EFF',
+  '边缘计算': '#E6A23C',
+  '大数据': '#E6A23C',
+  'IPv6': '#E6A23C',
+  '区块链': '#E6A23C',
+  '5G接入': '#9B59B6',
+}
+
+const extensionPieOption = computed(() => {
+  if (!stats.value?.extension_stats) return {}
+  const data = Object.entries(stats.value.extension_stats).map(([name, value]) => ({
+    name, value, itemStyle: { color: EXTENSION_COLORS[name] || '#C0C0C0' }
+  })).filter(d => d.value > 0)
+  return {
+    title: { text: '题库扩展类型分布', left: 'center' },
+    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+    legend: { bottom: 0 },
+    series: [{ type: 'pie', radius: ['40%', '70%'], data, label: { formatter: '{b}\n{d}%' } }]
+  }
+})
+
 const loadData = async () => {
   const [pRes, sRes] = await Promise.all([getProject(projectId.value), getStats(projectId.value)])
   project.value = pRes.data
@@ -107,6 +133,12 @@ onMounted(loadData)
       </el-col>
       <el-col :span="12">
         <el-card><v-chart :option="issuePieOption" style="height: 350px;" /></el-card>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="16" style="margin-top: 16px;" v-if="stats?.extension_stats">
+      <el-col :span="24">
+        <el-card><v-chart :option="extensionPieOption" style="height: 350px;" /></el-card>
       </el-col>
     </el-row>
 

@@ -15,17 +15,33 @@ const editingProject = ref(false)
 const copyTarget = ref(null)
 const copySource = ref(null)
 
-const OBJECT_TYPES = [
-  '物理机房', '网络设备', '安全设备', '服务器/存储', '终端设备',
-  '其他系统或设备', '系统管理软件/平台', '业务应用系统/平台',
-  '数据资源', '安全相关人员', '安全管理文档', '漏洞扫描', '渗透测试'
+const OBJECT_TYPE_GROUPS = [
+  {
+    label: '通用',
+    types: ['物理机房', '网络设备', '安全设备', '服务器/存储', '终端设备',
+      '其他系统或设备', '系统管理软件/平台', '业务应用系统/平台',
+      '数据资源', '安全相关人员', '安全管理文档', '漏洞扫描', '渗透测试']
+  },
+  { label: '物联网', types: ['感知节点设备', '网关节点设备'] },
+  { label: '工业控制', types: ['工业控制设备', '室外控制设备'] },
+  { label: '移动互联', types: ['无线接入设备', '移动终端'] },
+  { label: '边缘计算', types: ['MEC节点', '边缘网关'] },
+  { label: '大数据', types: ['大数据平台', '数据采集节点'] },
+  { label: 'IPv6', types: ['IPv6网络设备', 'IPv6安全设备'] },
+  { label: '区块链', types: ['区块链节点', '智能合约系统'] },
+  { label: '5G接入', types: ['5G基站', 'UPF设备'] },
 ]
+const OBJECT_TYPES = OBJECT_TYPE_GROUPS.flatMap(g => g.types)
 
 const SUB_TYPES = {
   '系统管理软件/平台': ['云控制台', '数据库', '中间件'],
   '数据资源': ['鉴别数据', '重要业务数据', '主要配置数据', '重要审计数据'],
   '安全相关人员': ['安全管理员', '系统管理员', '审计管理员'],
   '安全管理文档': ['安全管理中心', '安全管理制度', '安全管理机构', '安全管理人员', '安全建设管理', '安全运维管理', '其他安全要求指标'],
+  '工业控制设备': ['PLC', 'DCS控制器', 'RTU', 'SCADA系统'],
+  'MEC节点': ['通用MEC', '专用MEC'],
+  '大数据平台': ['Hadoop集群', 'Spark集群', '数据仓库', '数据湖'],
+  '区块链节点': ['共识节点', '普通节点', '轻节点'],
 }
 
 const objForm = ref({ object_type: '', name: '', sub_type: '', extra_info: '' })
@@ -189,8 +205,10 @@ onMounted(loadData)
     <el-dialog v-model="showObjDialog" title="添加评测对象" width="500px">
       <el-form :model="objForm" label-width="100px">
         <el-form-item label="对象类型" required>
-          <el-select v-model="objForm.object_type" placeholder="选择类型" style="width: 100%;">
-            <el-option v-for="t in OBJECT_TYPES" :key="t" :label="t" :value="t" />
+          <el-select v-model="objForm.object_type" placeholder="选择类型" style="width: 100%;" filterable>
+            <el-option-group v-for="group in OBJECT_TYPE_GROUPS" :key="group.label" :label="group.label">
+              <el-option v-for="t in group.types" :key="t" :label="t" :value="t" />
+            </el-option-group>
           </el-select>
         </el-form-item>
         <el-form-item label="子类型" v-if="SUB_TYPES[objForm.object_type]">
